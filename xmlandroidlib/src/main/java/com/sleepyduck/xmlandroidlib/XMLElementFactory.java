@@ -1,0 +1,105 @@
+package com.sleepyduck.xmlandroidlib;
+
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+
+/**
+ * Utility class to transform a {@link IXMLParsable} to a XML string
+ *
+ * @author Fredrik Metcalf
+ */
+public class XMLElementFactory implements Serializable {
+    private static final long serialVersionUID = -4105768870585070475L;
+
+    /**
+     * Builds a XMLElement structure from a XML String using a {@link SAXParser}
+     *
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    public static List<XMLElement> BuildFromReader(final Reader reader) throws ParserConfigurationException, SAXException, IOException {
+        final XMLElement startElement = new XMLElement();
+        final SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+        parser.parse(new InputSource(reader), new DefaultHandler() {
+            XMLElement currentElement = startElement;
+
+            @Override
+            public void characters(final char[] ch, final int start, final int length) throws SAXException {
+                int offset = 0;
+                for (int i = 0; i < length; ++i)
+                    if (Character.isWhitespace(ch[start + i]))
+                        offset++;
+                    else
+                        break;
+
+                currentElement.setData(String.valueOf(ch, start + offset, length - offset));
+            }
+
+            @Override
+            public void endElement(final String uri, final String localName, final String qName) throws SAXException {
+                currentElement = currentElement.getParent();
+            }
+
+            @Override
+            public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
+                final XMLElement newEl = new XMLElement(qName);
+                currentElement.addChild(newEl);
+                for (int i = 0; i < attributes.getLength(); ++i)
+                    newEl.addAttribute(attributes.getLocalName(i), attributes.getValue(i));
+                currentElement = newEl;
+            }
+        });
+        return startElement.getChildren();
+    }
+
+    /**
+     * Builds a XMLElement structure from a XML String using a {@link SAXParser}
+     *
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    public static List<XMLElement> BuildFromXMLString(final String xmlString) throws ParserConfigurationException, SAXException, IOException {
+        final StringReader reader = new StringReader(xmlString);
+        return BuildFromReader(reader);
+    }
+
+    private final IXMLParsable mRegisteredXMLObject;
+
+    public XMLElementFactory(final IXMLParsable registeredXMLObject) {
+        super();
+        mRegisteredXMLObject = registeredXMLObject;
+    }
+
+    /**
+     * Creates a {@link XMLElement} representation of the {@link IXMLParsable} object
+     */
+    public XMLElement toXMLElement() {
+        final XMLElement element = new XMLElement(mRegisteredXMLObject.getClass().getSimpleName());
+        mRegisteredXMLObject.putAttributes(element);
+        return element;
+    }
+
+    /**
+     * @return a XML String
+     */
+    public String toXMLString() {
+        return toXMLElement().toString();
+    }
+
+}

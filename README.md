@@ -63,6 +63,13 @@ new Foo().toString()
     <Bar>Café</Bar>
 </Foo>
 ```
+Creating XMLElements from String or data
+---
+There are two ways to create a XMLElement structure. Either use XMLElementFactory.BuildFromReader(java.io.Reader) or use XMLElementFactory.BuildFromXMLString(String). The BuildFromXMLString creates a StringReader and calls BuildFromReader. BuildFromReader uses SAXParser to parse the file.
+```
+List<XMLElement> elements = XMLElementFactory
+        .BuildFromXMLString("<Foo key="value"><Bar>Café</Bar></Foo>");
+```
 Access
 ===
 To access this android library, add the following to your gradle.build

@@ -106,22 +106,31 @@ public class XMLElement implements Serializable {
 
     /**
      * Adds all the {@link XMLElement XMLElements} in the list as children of this XMLElement
+     * @param elems
+     * @return Return this object
      */
-    public void addAllChildren(final List<XMLElement> elems) {
+    public XMLElement addAllChildren(final List<XMLElement> elems) {
         mChildren.addAll(elems);
         for (final XMLElement el : elems)
             el.mParent = this;
+        return this;
     }
 
     /**
      * Adds a {@link Attribute}
+     * @param name
+     * @param value
+     * @return Returns this object
      */
-    public void addAttribute(final String name, final String value) {
+    public XMLElement addAttribute(final String name, final String value) {
         mAttributes.add(new Attribute(name, value));
+        return this;
     }
 
     /**
      * Adds the {@link XMLElement} to the the end of the child list
+     * @param el
+     * @return Returns the added child
      */
     public XMLElement addChild(final XMLElement el) {
         mChildren.add(el);
@@ -131,6 +140,8 @@ public class XMLElement implements Serializable {
 
     /**
      * Creates a new {@link XMLElement} and adds it to the the end of the child list
+     * @param name
+     * @return Returns the created child
      */
     public XMLElement createChild(String name) {
         XMLElement el = new XMLElement(name);
@@ -237,9 +248,12 @@ public class XMLElement implements Serializable {
 
     /**
      * Sets the data of this element
+     * @param data
+     * @return Returns this object
      */
-    public void setData(final String data) {
+    public XMLElement setData(final String data) {
         this.mData = data;
+        return this;
     }
 
     /**

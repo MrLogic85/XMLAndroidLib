@@ -4,6 +4,7 @@ package com.sleepyduck.xmlandroidlib;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -11,7 +12,9 @@ import java.util.List;
  *
  * @author Fredrik Metcalf
  */
-public class XMLElement implements Serializable {
+public class XMLElement implements Serializable, Iterable<XMLElement> {
+    private static final long serialVersionUID = 8743012699148733484L;
+
     /**
      * A name vaule pair used to store attributes in the {@link XMLElement}
      */
@@ -26,8 +29,6 @@ public class XMLElement implements Serializable {
             Value = value;
         }
     }
-
-    private static final long serialVersionUID = 8743012699148733484L;
 
     private String mName = "";
     private String mData = "";
@@ -88,8 +89,11 @@ public class XMLElement implements Serializable {
                 str += "\n" + ident + "\t" + getAttributeName(i) + "=\"" + getAttributeValue(i) + "\"";
             }
         }
-        if (mData.length() > 0 || mChildren.size() > 0) {
-            str += ">" + mData + (mChildren.size() > 0 ? "\n" : "");
+        if (mData.length() > 0) {
+            str += ">" + (mChildren.size() > 0 || mAttributes.size() > 1 ? "\n\t" + ident : "") + mData
+                    + (mChildren.size() > 0 || mAttributes.size() > 1 ? "\n" : "");
+        } else if (mChildren.size() > 0) {
+            str += ">\n";
         } else {
             str += "/>";
         }
@@ -99,7 +103,7 @@ public class XMLElement implements Serializable {
         }
 
         if (mData.length() > 0 || mChildren.size() > 0) {
-            str += (mChildren.size() > 0 ? ident : "") + "</" + mName + ">";
+            str += (mChildren.size() > 0 || mAttributes.size() > 1 ? ident : "") + "</" + mName + ">";
         }
         return str;
     }
@@ -196,6 +200,13 @@ public class XMLElement implements Serializable {
     }
 
     /**
+     * Returns all children
+     */
+    public XMLElement getChildAt(int i) {
+        return mChildren.get(i);
+    }
+
+    /**
      * Returns the data
      */
     public String getData() {
@@ -206,12 +217,10 @@ public class XMLElement implements Serializable {
      * Returns the first occurrence of a {@link XMLElement} with the given name, searches depth first.
      */
     public XMLElement getElement(final String name) {
-        if (mName.equals(name))
-            return this;
-        for (final XMLElement el : mChildren) {
-            final XMLElement foundEl = el.getElement(name);
-            if (foundEl != null)
-                return foundEl;
+        for (XMLElement el : this) {
+            if (name.equals(el.mName)) {
+                return el;
+            }
         }
         return null;
     }
@@ -220,14 +229,16 @@ public class XMLElement implements Serializable {
      * Returns the first occurrence of a {@link XMLElement} with the given element name and attribute name-value pair, searches depth first.
      */
     public XMLElement getElement(final String elementName, final String attributeName, final String attributeValue) {
-        if (mName.equals(elementName) && getAttribute(attributeName) != null
-                && getAttribute(attributeName).equals(attributeValue)) {
-            return this;
-        }
-        for (final XMLElement el : mChildren) {
-            final XMLElement foundEl = el.getElement(elementName, attributeName, attributeValue);
-            if (foundEl != null)
-                return foundEl;
+        for (XMLElement el : this) {
+            if (elementName.equals(el.mName)) {
+                String value = el.getAttribute(attributeName);
+                if (value != null) {
+                    if ((attributeValue != null && attributeValue.equals(value))
+                            || attributeValue == null) {
+                        return el;
+                    }
+                }
+            }
         }
         return null;
     }
@@ -240,9 +251,27 @@ public class XMLElement implements Serializable {
     }
 
     /**
+     * Returns true if a parent exists
+     */
+    public boolean hasParent() {
+        return mParent != null;
+    }
+
+    /**
      * Returns the parent {@link XMLElement}
      */
     public XMLElement getParent() {
+        return mParent;
+    }
+
+    /**
+     * Returns the top parent {@link XMLElement}
+     */
+    public XMLElement getTopParent() {
+        XMLElement parent = this;
+        while (parent.hasParent()) {
+            parent = parent.getParent();
+        }
         return mParent;
     }
 
@@ -262,5 +291,10 @@ public class XMLElement implements Serializable {
     @Override
     public String toString() {
         return toString("");
+    }
+
+    @Override
+    public Iterator<XMLElement> iterator() {
+        return new XMLIterator(this);
     }
 }

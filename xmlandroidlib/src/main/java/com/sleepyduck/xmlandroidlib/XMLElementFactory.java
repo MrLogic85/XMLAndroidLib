@@ -79,27 +79,4 @@ public class XMLElementFactory implements Serializable {
         return BuildFromReader(reader);
     }
 
-    private final IXMLParsable mRegisteredXMLObject;
-
-    public XMLElementFactory(final IXMLParsable registeredXMLObject) {
-        super();
-        mRegisteredXMLObject = registeredXMLObject;
-    }
-
-    /**
-     * Creates a {@link XMLElement} representation of the {@link IXMLParsable} object
-     */
-    public XMLElement toXMLElement() {
-        final XMLElement element = new XMLElement(mRegisteredXMLObject.getClass().getSimpleName());
-        mRegisteredXMLObject.putAttributes(element);
-        return element;
-    }
-
-    /**
-     * @return a XML String
-     */
-    public String toXMLString() {
-        return toXMLElement().toString();
-    }
-
 }

@@ -98,7 +98,7 @@ public class XMLElement implements Serializable {
             str += el.toString(ident + "\t") + "\n";
         }
 
-        if (mChildren.size() > 0) {
+        if (mData.length() > 0 || mChildren.size() > 0) {
             str += (mChildren.size() > 0 ? ident : "") + "</" + mName + ">";
         }
         return str;
